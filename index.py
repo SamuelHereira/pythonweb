@@ -9,6 +9,7 @@ app.config['MYSQL_PASSWORD'] = 'roottoor'
 app.config['MYSQL_DB'] = 'weblogin'
 mysql = MySQL(app)
 
+
 #sesion
 app.secret_key = 'mysecretkey'
 
@@ -28,21 +29,23 @@ def login():
         
         cursor = mysql.connection.cursor()
         cursor.execute('SELECT * FROM users WHERE email = %s', (email,))
-        data = cursor.fetchall()
+        data = cursor.fetchone()
         print(data)
         if not data:
             flash('Incorrect Email')
             return redirect(url_for('index'))
-        elif password == data[0][1]:
-            return redirect(url_for('home'))
+        elif password == data[1]:
+            return redirect(url_for('home', user=data[2]), code=307)
         else:
             flash('Incorrect Password')
             return redirect(url_for('index'))
 
 
-@app.route('/home')
-def home():
-    return render_template('home.html')
+@app.route('/home/<string:user>', methods=['POST'])
+def home(user):
+    if request.method == 'POST':
+        return render_template('home.html', user=user)
+        
 
   
 @app.route('/register', methods=['POST'])
